@@ -65,8 +65,8 @@
         <div><label><input type="checkbox" id="rotateWithView"> Rotate with view</label></div>
         <!-- Menu -->
         <div id="MenuMap" class="boxTool" style="bottom: 10px;">
-            <button type="button" class="btn btn-outline-success" title="Basemap"><i class="bi bi-globe bi-x2"></i></button>
-            <button type="button" class="btn btn-outline-success" title="Layers"><i class="bi bi-layers"></i></button>
+            <button type="button" id="cmdBasemap" class="btn btn-outline-success" title="Basemap"><i class="bi bi-globe bi-x2"></i></button>
+            <button type="button" id="cmdLayers" class="btn btn-outline-success" title="Layers"><i class="bi bi-layers"></i></button>
             <button type="button" class="btn btn-outline-success" title="Pengukuran"><i class="bi bi-rulers"></i></button>
         </div>
         <!-- Basemap -->
@@ -76,6 +76,16 @@
           </div>
           <div class="card-body row" id="Basemaps">
                     
+          </div>
+        </div>
+
+        <!-- Layer -->
+        <div class="boxTool card col-5" id="BoxLayers">
+          <div class="card-header" id="BoxLayersheader">
+            Daftar Layers
+          </div>
+          <div class="card-body row" id="Layers">
+            <ul id="LayerTreeList"></ul>
           </div>
         </div>
 
@@ -93,9 +103,28 @@ document.getElementById("map").style.height = screen.height -200 + "px";
 document.getElementById("MenuMap").style.left = screen.width/2 - 100 + "px";
 document.getElementById("BoxBasemap").style.left = screen.width/2 - 300 + "px";
 document.getElementById("BoxBasemap").style.top = screen.height/2 -200 + "px";
+document.getElementById("BoxLayers").style.top = "150px";
 
 //mengaktifkan mode move
 dragElement(document.getElementById("BoxBasemap"));
+dragElement(document.getElementById("BoxLayers"));
+
+//fungsi tombol
+document.getElementById("cmdBasemap").addEventListener("click", function(){
+  if (document.getElementById("BoxBasemap").style.display == "none"){
+    document.getElementById("BoxBasemap").style.display = "block";
+  } else{
+    document.getElementById("BoxBasemap").style.display = "none";
+  }
+});
+
+document.getElementById("cmdLayers").addEventListener("click", function(){
+  if (document.getElementById("BoxLayers").style.display == "none"){
+    document.getElementById("BoxLayers").style.display = "block";
+  } else{
+    document.getElementById("BoxLayers").style.display = "none";
+  }
+});
 
 //global variabel
 var Basemap;
@@ -116,6 +145,21 @@ Basemap = new ol.layer.Tile({
 var attribution = new ol.control.Attribution({
 	collapsible: true
 });
+
+// overview
+var overviewMapControl = new ol.control.OverviewMap({
+  className: 'ol-overviewmap ol-custom-overviewmap',
+  layers: [
+    new ol.layer.Tile({
+      source: new ol.source.XYZ({
+        url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      })
+    })
+  ],
+  collapseLabel: "\u00BB",
+  label: "\u00AB",
+  collapsed: true,
+})
 
 // untuk map preview
 // var overlay = new ol.Overlay({
@@ -152,14 +196,141 @@ map = new ol.Map({
 			InfoPopup : false,
 			metadata : 'http://server.arcgisonline.com/arcgis/rest/services/Reference/World_Transportation/MapServer/info/iteminfo',
 			visible: true
-  })
+    }),
   ],
 	target: 'map',
 	view: new ol.View({
 		center: ol.proj.fromLonLat([115.32424, -2.2323177]),
 		zoom:6
 	})
-}); 
+});
+
+function LoadTreLayerList(){	
+  var n=0;		
+  var lyrTreL="";
+  $('#LayerTreeList').html()	
+	map.getLayers().forEach(function(layer) {
+	if(layer.get('name')){
+	 var lgd = layer.get('LegenUrl');
+		 if(lgd){
+			 if(layer.get('LegentType') == 'ESRI'){
+			 var ListLegenTree = '<li class="list-group-item list-group-item" id="layer'+n+'_LI"  onClick="resizeIframe('+n+')"><div class="btn-group dropright btn-block" draggable="true"><button type="button" class="btn btn-sm"><input id="layer'+n+'_vsb" class="visible" type="checkbox"> </button><button type="button" id="layer'+n+'_NM" class="btn btn-sm btn-block" style="text-align:left;">'+layer.get('name')+'</button><button type="button" class="btn btn-sm dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button><div class="dropdown-menu"><a class="dropdown-item" href="#"><label class="checkbox text-info" for="layer'+n+'popup"><i class="far fa-comment-alt"></i> Popup <input id="layer'+n+'popup" class="popup" type="checkbox"/ checked></label></a><a class="dropdown-item" href="#"><label class="text-warning"> <i class="fa fa-adjust" aria-hidden="true"></i> Opacity <input class="opacity" id="layer'+n+'_opc" type="range" min="0" max="1" step="0.01"/></label></a><a class="dropdown-item" href="#" id="layer'+n+'_zm"><i class="fa fa-search-plus"></i> Zoom to Layer</a><div class="dropdown-divider"></div><a class="dropdown-item text-danger" href="#" id="layer'+n+'_rmv"><i class="fa fa-trash"></i> Remove</a><a class="dropdown-item text-success" href="'+layer.get('metadata')+'" target="_blank"><i class="fa fa-info-circle"></i> Metadata</a></div></div> <fieldset id="layer'+n+'_FS"><iframe id="layer'+n+'_LGN" class="style-5" width="300px"  src="/Praktek_WebGIS/Esri_legenda.php?url='+lgd+'" style="border:none;"></iframe></fieldset></li>';
+			 }else {
+			var ListLegenTree = '<li class="list-group-item list-group-item" id="layer'+n+'_LI" ><div class="btn-group dropright btn-block" draggable="true"><button type="button" class="btn btn-sm"><input id="layer'+n+'_vsb" class="visible" type="checkbox"> </button><button type="button" id="layer'+n+'_NM" class="btn btn-sm btn-block" style="text-align:left;">'+layer.get('name')+'</button><button type="button" class="btn btn-sm dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button><div class="dropdown-menu"><a class="dropdown-item" href="#"><label class="checkbox text-info" for="layer'+n+'popup"><i class="far fa-comment-alt"></i> Popup <input id="layer'+n+'popup" class="popup" type="checkbox"/ checked></label></a><a class="dropdown-item" href="#"><label class="text-warning"> <i class="fa fa-adjust" aria-hidden="true"></i> Opacity <input class="opacity" id="layer'+n+'_opc" type="range" min="0" max="1" step="0.01"/></label></a><a class="dropdown-item" href="#" id="layer'+n+'_zm"><i class="fa fa-search-plus"></i> Zoom to Layer</a><div class="dropdown-divider"></div><a class="dropdown-item text-danger" href="#" id="layer'+n+'_rmv"><i class="fa fa-trash"></i> Remove</a><a class="dropdown-item text-success" href="https://geoservice.kalselprov.go.id/ServisDerektory/?IdSearch='+layer.get('metadata')+'" target="_blank"><i class="fa fa-info-circle"></i> Metadata</a></div></div> <fieldset id="layer'+n+'_FS"><img src="'+lgd+'"></fieldset></li>';	
+			 }
+		 }else{
+			var ListLegenTree = '<li class="list-group-item list-group-item" id="layer'+n+'_LI" ><div class="btn-group dropright btn-block" draggable="true"><button type="button" class="btn btn-sm"><input id="layer'+n+'_vsb" class="visible" type="checkbox"> </button><button type="button" id="layer'+n+'_NM" class="btn btn-sm btn-block" style="text-align:left;">'+layer.get('name')+'</button><button type="button" class="btn btn-sm dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button><div class="dropdown-menu"><a class="dropdown-item" href="#"><label class="checkbox text-info" for="layer'+n+'popup"><i class="far fa-comment-alt"></i> Popup <input id="layer'+n+'popup" class="popup" type="checkbox"/ checked></label></a><a class="dropdown-item" href="#"><label class="text-warning"> <i class="fa fa-adjust" aria-hidden="true"></i> Opacity <input class="opacity" id="layer'+n+'_opc" type="range" min="0" max="1" step="0.01"/></label></a><a class="dropdown-item" href="#" id="layer'+n+'_zm"><i class="fa fa-search-plus"></i> Zoom to Layer</a><div class="dropdown-divider"></div><a class="dropdown-item text-danger" href="#" id="layer'+n+'_rmv"><i class="fa fa-trash"></i> Remove</a><a class="dropdown-item text-success" href="https://geoservice.kalselprov.go.id/ServisDerektory/?IdSearch='+layer.get('metadata')+'" target="_blank"><i class="fa fa-info-circle"></i> Metadata</a></div></div> <fieldset id="layer'+n+'_FS">-</li>';	
+		 }
+		lyrTreL = ListLegenTree+lyrTreL;
+		n++;
+		}
+	 });
+	 
+	 $('#LayerTreeList').html(lyrTreL)
+};
+
+
+//membuat HTML list tree
+ LoadTreLayerList();
+
+//====================FUNGSI TREE LAYER MENU==================
+	function bindInputs(layerid, layer) {
+	
+	  var visibilityInput = $(layerid + '_vsb');
+	  visibilityInput.on('change', function () {
+		layer.setVisible(this.checked);
+	  });
+	  	  
+	  visibilityInput.prop('checked', layer.getVisible());
+	  var opacityInput = $(layerid + '_opc');
+	  opacityInput.on('input', function () {
+		layer.setOpacity(parseFloat(this.value));
+	  });
+	  opacityInput.val(String(layer.getOpacity()));
+	  
+	  var LgndInput = $(layerid + '_NM');
+	  var LgndDIV = $(layerid + '_FS');
+	  LgndDIV.hide();
+	  	LgndInput.on('click', function () {
+			  LgndDIV.show();
+	   });
+	   LgndInput.on('dblclick', function () {
+			  LgndDIV.hide();
+	   });
+	  //------------REMOVE LAYER--------------------
+	   var CmdRemoveLayer = $(layerid + '_rmv');	   
+	   CmdRemoveLayer.on('click', function () {
+			map.removeLayer(layer);
+			var LayrLI = $(layerid + '_LI');
+			LayrLI.remove();
+	   });
+	   //-----------MOVE Z Index LAYER--------------------
+		layer.setZIndex(ZIdx);
+		ZIdx++;
+		//------ ZOOM TO EXTEND LAYER---------------
+		var CmdMenuZoomLyr = $(layerid + '_zm');	   
+	      CmdMenuZoomLyr.on('click', function () {			  
+		   //map.getView().fit(layer.getExtent());
+		   var extent = layer.getExtent();
+			map.getView().fit(extent);		   		   
+	   });
+	   //------POPUP LAYER---------------
+		var Elmpopup = $(layerid + 'popup');
+	  	Elmpopup.on('change', function () {
+		 layer.set('InfoPopup', this.checked);
+	  });
+	  	  
+//		//--------- MOVE UP LAYER-------------------
+//		var CmdMenuUpLyr = $(layerid + '_Mup');	   
+//	      CmdMenuUpLyr.on('click', function () {			  
+//		   layer.setZIndex(eval(layer.getZIndex())+1);
+//	   });
+//	   //--------- MOVE DOWN LAYER-------------------
+//		var CmdMenuDownLyr = $(layerid + 'Mdown');	   
+//	      CmdMenuDownLyr.on('click', function () {			  
+//		   layer.setZIndex(eval(layer.getZIndex())-1);
+//	   });
+	   
+}
+
+//===  FUNGSI LOAD DATA LAYER =====	
+function setup(id, group) {
+    group.getLayers().forEach(function (layer, i) {
+    var layerid = id + i;
+    bindInputs(layerid, layer);
+    if (layer instanceof ol.layer.Group) {
+        setup(layerid, layer);
+    }
+    });
+}
+//=== MEMANGGIL FUNGSI LOAD DATA LAYER ====
+setup('#layer', map.getLayerGroup());
+
+// == FUNGSI MEDEFINASI LAYER INDEX PADA LIST GROUP
+$('#layertree li').mouseenter(function() {
+        ListLayerIndex = $(this).index();
+    //alert(ListLayerIndex);		
+})
+
+//=== FUNGSI DRAG DROP LAYER POSISI ====
+function pindahZLayer(s,LyNm){
+  var Tly = eval(document.querySelectorAll("#layertree li").length) - ListLayerIndex;
+ // var Ly= 'layer'+(Tly-1)+'_NM';
+ // alert(" dari posis :"+ListLayerIndex+ " ke pos : "+s);
+ //alert(document.getElementById(Ly).innerHTML);
+  if(ListLayerIndex >s ){
+		var Posisi = (eval(document.querySelectorAll("#layertree li").length)-1) + eval(s); 
+	}else{
+		var Posisi = (eval(document.querySelectorAll("#layertree li").length) -1)- eval(s);  
+	}
+	var p= document.getElementById(LyNm).id;
+	var Ly = p.replaceAll('_LI', '_NM');
+   map.getLayers().forEach(function(layer) {
+	   if(layer.get('name') == document.getElementById(Ly).innerHTML){
+		   layer.setZIndex(Posisi);
+		  }
+   });
+}
 
 function UpdateBaseMap(u,t,p){
   if(t== "ESRI"){
