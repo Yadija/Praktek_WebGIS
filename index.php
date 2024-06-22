@@ -197,6 +197,13 @@ map = new ol.Map({
 			metadata : 'http://server.arcgisonline.com/arcgis/rest/services/Reference/World_Transportation/MapServer/info/iteminfo',
 			visible: true
     }),
+    new ol.layer.Tile({
+      source: new ol.source.TileWMS({
+          url: 'http://localhost:8080/geoserver/DataGIS/wms?',
+          params: { 'LAYERS': 'DataGIS:Toponimi_PT_50K' }
+        }),
+      name : "Toponimi"
+    }),
   ],
 	target: 'map',
 	view: new ol.View({
@@ -265,8 +272,8 @@ function LoadTreLayerList(){
 			LayrLI.remove();
 	   });
 	   //-----------MOVE Z Index LAYER--------------------
-		layer.setZIndex(ZIdx);
-		ZIdx++;
+		// layer.setZIndex(ZIdx);
+		// ZIdx++;
 		//------ ZOOM TO EXTEND LAYER---------------
 		var CmdMenuZoomLyr = $(layerid + '_zm');	   
 	      CmdMenuZoomLyr.on('click', function () {			  
