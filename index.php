@@ -207,6 +207,13 @@ map = new ol.Map({
     new ol.layer.Tile({
       source: new ol.source.TileWMS({
           url: 'http://localhost:8080/geoserver/DataGIS/wms?',
+          params: { 'LAYERS': 'DataGIS:Sungai_AR_250K' }
+        }),
+      name : "Polygon"
+    }),
+    new ol.layer.Tile({
+      source: new ol.source.TileWMS({
+          url: 'http://localhost:8080/geoserver/DataGIS/wms?',
           params: { 'LAYERS': 'DataGIS:Toponimi_PT_50K' }
         }),
       name : "Toponimi"
