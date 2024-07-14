@@ -209,7 +209,7 @@ map = new ol.Map({
           url: 'http://localhost:8080/geoserver/DataGIS/wms?',
           params: { 'LAYERS': 'DataGIS:Sungai_AR_250K' }
         }),
-      name : "Polygon"
+      name : "Line"
     }),
     new ol.layer.Tile({
       source: new ol.source.TileWMS({
@@ -227,7 +227,7 @@ map = new ol.Map({
 });
 
 function LoadTreLayerList(){	
-  var n=0;		
+  var n=1;		
   var lyrTreL="";
   $('#LayerTreeList').html()	
 	map.getLayers().forEach(function(layer) {
